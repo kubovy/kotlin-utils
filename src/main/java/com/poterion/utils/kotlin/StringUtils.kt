@@ -3,6 +3,19 @@ package com.poterion.utils.kotlin
 
 import java.net.URI
 import java.net.URISyntaxException
+import java.nio.charset.Charset
+import java.util.*
+
+/**
+ * Ensures this [String] has the given `suffix`.
+ *
+ * @author Jan Kubovy [jan@kubovy.eu]
+ * @param suffix Suffix to ensure
+ * @param ignoreCase Ignore `suffix` case
+ * @return [String] with given `suffix`
+ */
+fun String.ensureSuffix(suffix: String, ignoreCase: Boolean = false) =
+	if (endsWith(suffix, ignoreCase)) this else "${this}${suffix}"
 
 /**
  * Trims end of this [String] if its longer than `maxLength`. If this [String] was trimmed, if will be appended with
@@ -64,3 +77,19 @@ fun String.toUriOrNull(): URI? = try {
 } catch (e: URISyntaxException) {
 	null
 }
+
+/**
+ * Encode this [String] with [Base64]
+ *
+ * @author Jan Kubovy [jan@kubovy.eu]
+ * @return [Base64] encoded [String]
+ */
+fun String.base64Encode(charset: Charset = charset("UTF-8")): String = toByteArray(charset).base64Encode()
+
+/**
+ * Decode this [Base64] encoded [String]
+ *
+ * @author Jan Kubovy [jan@kubovy.eu]
+ * @return Decoded [String]
+ */
+fun String.base64Decode(): ByteArray = Base64.getDecoder().decode(this)
