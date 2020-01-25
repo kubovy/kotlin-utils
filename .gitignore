@@ -1,9 +1,9 @@
 /.idea/
-build/
-target/
-out/
+/.gradle/
+/build/
+/target/
+/out/
 *.bak
 *.iml
 *.log
 .DS_Store
-
