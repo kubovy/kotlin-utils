@@ -128,4 +128,33 @@ inline fun <K, V> Map<out K, V>.intermediate(action: (Map.Entry<K, V>) -> Unit):
  */
 inline fun <T> Iterable<T>.append(provider: () -> Iterable<T>): Iterable<T> = this + provider()
 
+/**
+ * Checks if this [Collection] contains exactly all elements from the given `other` [Collection]. The order is not
+ * important.
+ *
+ * @param other The other [Collection]
+ * @return Whether this and the `other` [Collection]'s contain exactly the same elements.
+ */
+fun <T> Collection<T>.containsExactly(other: Collection<T>): Boolean = size == other.size && containsAll(other)
+
+/**
+ * Checks if this [Iterable] contains exactly all elements from the given `other` [Iterable]. The order is not
+ * important.
+ *
+ * @param other The other [Iterable]
+ * @return Whether this and the `other` [Iterable]'s contain exactly the same elements.
+ */
+fun <T> Iterable<T>.containsExactly(other: Iterable<T>): Boolean =
+		all { other.contains(it) } && other.all { contains(it) }
+
+/**
+ * Checks if this [Iterable] contains exactly all elements from the given `other` [Iterable]. The order is not
+ * important.
+ *
+ * @param other The other [Iterable]
+ * @param mapper Mapper to be applied to all elements in both [iterables][Iterable] before the comparison.
+ * @return Whether this and the `other` [Iterable]'s contain exactly the same elements.
+ */
+fun <T, R> Iterable<T>.containsExactly(other: Iterable<T>, mapper: (T?) -> R?): Boolean =
+		map(mapper).containsExactly(other.map(mapper))
 
