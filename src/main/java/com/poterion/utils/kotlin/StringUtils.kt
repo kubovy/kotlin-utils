@@ -84,7 +84,7 @@ fun String.toUriOrNull(): URI? = try {
  * @author Jan Kubovy [jan@kubovy.eu]
  * @return [Base64] encoded [String]
  */
-fun String.base64Encode(charset: Charset = charset("UTF-8")): String = toByteArray(charset).base64Encode()
+fun String.base64Encode(charset: Charset = Charsets.UTF_8): String = toByteArray(charset).base64Encode()
 
 /**
  * Decode this [Base64] encoded [String]
