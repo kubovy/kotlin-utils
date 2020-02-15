@@ -98,7 +98,7 @@ fun encrypt(message: String, key: SecretKeySpec): String {
 		init(Cipher.ENCRYPT_MODE, key)
 	}
 	val ivParameterSpec = pbeCipher.parameters.getParameterSpec(IvParameterSpec::class.java)
-	val cryptoText = pbeCipher.doFinal(message.toByteArray(charset("UTF-8")))
+	val cryptoText = pbeCipher.doFinal(message.toByteArray(Charsets.UTF_8))
 	val iv = ivParameterSpec.iv
 	return iv.base64Encode() + DELIMITER + cryptoText.base64Encode()
 }
@@ -139,7 +139,7 @@ fun decrypt(cipherText: String, key: SecretKeySpec): String {
 	val (iv, property) = cipherText.split(DELIMITER)
 	val pbeCipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
 	pbeCipher.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(iv.base64Decode()))
-	return String(pbeCipher.doFinal(property.base64Decode()), charset("UTF-8"))
+	return String(pbeCipher.doFinal(property.base64Decode()), Charsets.UTF_8)
 }
 
 
