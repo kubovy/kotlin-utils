@@ -1,3 +1,20 @@
+/******************************************************************************
+ * Copyright (C) 2020 Jan Kubovy (jan@kubovy.eu)                              *
+ *                                                                            *
+ * This program is free software: you can redistribute it and/or modify it    *
+ * under the terms of the GNU Lesser General Public License as published      *
+ * by the Free Software Foundation, either version 3 of the License, or (at   *
+ * your option) any later version.                                            *
+ *                                                                            *
+ * This program is distributed in the hope that it will be useful, but        *
+ * WITHOUT ANY WARRANTY; without even the implied warranty of                 *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
+ * GNU Lesser General Public License for more details.                        *
+ *                                                                            *
+ * You should have received a copy of the GNU Lesser General Public           *
+ * License along with this program.  If not, see                              *
+ * <http://www.gnu.org/licenses/>.                                            *
+ ******************************************************************************/
 @file:Suppress("unused")
 package com.poterion.utils.kotlin
 
@@ -42,7 +59,7 @@ fun setSaltForEncryption(salt: String) {
  * @return [SecretKeySpec]
  */
 fun createSecretKey(password: String, iterationCount: Int = 1_000_000, keyLength: Int = 128): SecretKeySpec =
-	createSecretKey(password.toCharArray(), iterationCount, keyLength)
+		createSecretKey(password.toCharArray(), iterationCount, keyLength)
 
 /**
  * Creates a password-based secret key.
@@ -72,7 +89,7 @@ fun createSecretKey(password: CharArray, iterationCount: Int = 1_000_000, keyLen
  * @return Encrypted message
  */
 fun encrypt(message: String, password: String? = null, iterationCount: Int = 1_000_000, keyLength: Int = 128) =
-	encrypt(message, createSecretKey(password ?: passwordCache, iterationCount, keyLength))
+		encrypt(message, createSecretKey(password ?: passwordCache, iterationCount, keyLength))
 
 /**
  * Encrypts this [String] with given `password`. If no `password` is given, the
@@ -83,7 +100,7 @@ fun encrypt(message: String, password: String? = null, iterationCount: Int = 1_0
  * @return Encrypted message
  */
 fun String.encrypt(password: String? = null): String =
-	encrypt(this, password)
+		encrypt(this, password)
 
 /**
  * Encrypts a message with given [`key`][SecretKeySpec].
@@ -115,7 +132,7 @@ fun encrypt(message: String, key: SecretKeySpec): String {
  * @return Decrypted message
  */
 fun decrypt(cipherText: String, password: String? = null, iterationCount: Int = 1_000_000, keyLength: Int = 128) =
-	decrypt(cipherText, createSecretKey(password ?: passwordCache, iterationCount, keyLength))
+		decrypt(cipherText, createSecretKey(password ?: passwordCache, iterationCount, keyLength))
 
 /**
  * Decrypts this [String] with given `password`. If no `password` is given, the
