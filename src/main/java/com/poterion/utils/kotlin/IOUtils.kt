@@ -3,15 +3,20 @@ package com.poterion.utils.kotlin
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.apache.commons.compress.utils.IOUtils
 import org.slf4j.LoggerFactory
-import java.io.*
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.zip.GZIPInputStream
 import javax.xml.bind.DatatypeConverter
 
 private val LOGGER = LoggerFactory.getLogger("com.poterion.footprint.manager.utils.IOUtils")
+const val BUFFER_SIZE = 8192
 
 /**
  * Assumes this [String] represents a filename and tries to remove its extension.
@@ -68,12 +73,33 @@ fun ByteArray.calculateHash(algorithm: String): String {
  */
 fun InputStream.calculateHash(algorithm: String): String = BufferedInputStream(this).use { inputStream ->
 	val digest = MessageDigest.getInstance(algorithm)
-	val block = ByteArray(8192)
+	val block = ByteArray(BUFFER_SIZE)
 	var length: Int
 	while (inputStream.read(block).also { length = it } > 0) {
 		digest.update(block, 0, length)
 	}
 	return DatatypeConverter.printHexBinary(digest.digest())
+}
+
+/**
+ * Copies the content of this InputStream into an OutputStream
+ *
+ * @param output Target [OutputStream]
+ * @param bufferSize Buffer size to use, must be bigger than 0
+ * @param reporter Reporter of copied bytes
+ * @return the number of bytes copied
+ */
+fun InputStream.copy(output: OutputStream, bufferSize: Int = BUFFER_SIZE, reporter: (Long) -> Unit = {}): Long {
+	require(bufferSize >= 1) { "Buffer size must be bigger than 0" }
+	val buffer = ByteArray(bufferSize)
+	var n: Int
+	var count: Long = 0
+	while (this.read(buffer).also { n = it } != -1) {
+		output.write(buffer, 0, n)
+		count += n.toLong()
+		reporter(count)
+	}
+	return count
 }
 
 /**
@@ -98,7 +124,10 @@ fun InputStream.tar() = TarArchiveInputStream(this)
  * @author Jan Kubovy [jan@kubovy.eu]
  * @param destinationPath Destination [Path]
  */
-fun InputStream.unTarTo(destinationPath: Path) = tar().extractTo(destinationPath)
+fun InputStream.unTarTo(destinationPath: Path,
+						bufferSize: Int = BUFFER_SIZE,
+						reporter: (Long) -> Unit = {}) = tar()
+		.extractTo(destinationPath, bufferSize, reporter)
 
 /**
  * Extracts GZIPed TAR represented by this [InputStream] to given `destinationPath`.
@@ -106,7 +135,10 @@ fun InputStream.unTarTo(destinationPath: Path) = tar().extractTo(destinationPath
  * @author Jan Kubovy [jan@kubovy.eu]
  * @param destinationPath Destination [Path]
  */
-fun InputStream.unGzipTarTo(destinationPath: Path) = gzipped().unTarTo(destinationPath)
+fun InputStream.unGzipTarTo(destinationPath: Path,
+							bufferSize: Int = BUFFER_SIZE,
+							reporter: (Long) -> Unit = {}) =
+		gzipped().unTarTo(destinationPath, bufferSize, reporter)
 
 /**
  * Extracts this [TarArchiveInputStream] to given `destinationPath`.
@@ -114,14 +146,16 @@ fun InputStream.unGzipTarTo(destinationPath: Path) = gzipped().unTarTo(destinati
  * @author Jan Kubovy [jan@kubovy.eu]
  * @param destinationPath Destination [Path]
  */
-fun TarArchiveInputStream.extractTo(destinationPath: Path) = use {
+fun TarArchiveInputStream.extractTo(destinationPath: Path,
+									bufferSize: Int = BUFFER_SIZE,
+									reporter: (Long) -> Unit = {}) = use {
 	try {
 		var tarEntry: TarArchiveEntry?
 		while (nextTarEntry.also { tarEntry = it } != null) {
 			if (tarEntry?.isDirectory != false) continue
 			val outputFile = destinationPath.resolve(tarEntry!!.name).toFile()
-				.also { it.parentFile.mkdirs() }
-			IOUtils.copy(this, FileOutputStream(outputFile))
+					.also { it.parentFile.mkdirs() }
+			reporter(this.copy(FileOutputStream(outputFile), bufferSize))
 		}
 	} catch (t: Throwable) {
 		LOGGER.error(t.message, t)
