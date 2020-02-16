@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
@@ -106,7 +105,7 @@ fun InputStream.calculateHash(algorithm: String): String = BufferedInputStream(t
  * @param reporter Reporter of copied bytes
  * @return the number of bytes copied
  */
-fun InputStream.copy(output: OutputStream, bufferSize: Int = BUFFER_SIZE, reporter: (Long) -> Unit = {}): Long {
+fun InputStream.copyTo(output: OutputStream, bufferSize: Int = BUFFER_SIZE, reporter: (Long) -> Unit = {}): Long {
 	require(bufferSize >= 1) { "Buffer size must be bigger than 0" }
 	val buffer = ByteArray(bufferSize)
 	var n: Int
@@ -125,7 +124,7 @@ fun InputStream.copy(output: OutputStream, bufferSize: Int = BUFFER_SIZE, report
  * @author Jan Kubovy [jan@kubovy.eu]
  * @return [GZIPInputStream]
  */
-fun InputStream.gzipped() = GZIPInputStream(BufferedInputStream(this))
+fun InputStream.gzipped() = GZIPInputStream(this)
 
 /**
  * Transforms this [InputStream] to [TarArchiveInputStream]
@@ -171,8 +170,10 @@ fun TarArchiveInputStream.extractTo(destinationPath: Path,
 		while (nextTarEntry.also { tarEntry = it } != null) {
 			if (tarEntry?.isDirectory != false) continue
 			val outputFile = destinationPath.resolve(tarEntry!!.name).toFile()
-					.also { it.parentFile.mkdirs() }
-			reporter(this.copy(FileOutputStream(outputFile), bufferSize))
+				.also { it.parentFile.mkdirs() }
+			outputFile.outputStream().buffered(bufferSize).use { outputStream ->
+				reporter(this.copyTo(outputStream, bufferSize))
+			}
 		}
 	} catch (t: Throwable) {
 		LOGGER.error(t.message, t)
