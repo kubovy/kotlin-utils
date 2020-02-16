@@ -40,6 +40,14 @@ fun setPasswordForEncryption(password: String) {
 }
 
 /**
+ * Check whether the default password for encryption is set.
+ *
+ * @author Jan Kubovy [jan@kubovy.eu]
+ * @return `true` if the default password for encryption is set, `false` otherwise.
+ */
+fun isPasswordForEncryptionSet() = passwordCache.isNotBlank()
+
+/**
  * Set a salt to a in-memory cache. This salt is than used as a default salt for [key generation][createSecretKey].
  *
  * @author Jan Kubovy [jan@kubovy.eu]
