@@ -54,7 +54,7 @@ fun Duration.formatString(): String {
 			.takeIf { minutes != null || it > 0 }
 			?.let { "%0${if (minutes != null) 2 else 1}d.".format(it) }
 	val millis = toMillis().rem(1000)
-			.takeIf { seconds != null || it > 0 }
+			.takeIf { seconds != null || it >= 0 }
 			?.let { "%0${if (seconds != null) 3 else 1}d".format(it) }
 	val suffix = when {
 		days == null && hours == null && minutes == null && seconds == null -> "ms"
