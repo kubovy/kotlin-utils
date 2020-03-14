@@ -25,6 +25,44 @@ import java.util.stream.Stream
  */
 
 /**
+ * Replace the whole collection `with` the given iterable.
+ *
+ * This will remove all items from the collection which are not present in the `with` replacement and add all
+ * items from the `with` replacement which are not present in this collection
+ *
+ * @param with Replacement.
+ * @return Whether success or not.
+ * @author Jan Kubovy [jan@kubovy.eu]
+ */
+fun <T> MutableCollection<T>.setAll(with: Iterable<T>): Boolean {
+	val new = with - this
+	val old = this - with
+	val removed = removeAll(old)
+	val added = addAll(new)
+	return removed && added
+}
+
+/**
+ * Replace the whole map `with` the given map.
+ *
+ * This will remove all mappings from the map which are not present in the `with` replacement, add all mappings
+ * from the `with` replacement which are not present in this collection and update all mappings which are different.
+ *
+ * @param with Replacement.
+ * @return Whether success or not.
+ * @author Jan Kubovy [jan@kubovy.eu]
+ */
+fun <K, V> MutableMap<K, V>.setAll(with: Map<K, V>) {
+	val newKeys = with.keys - this.keys
+	val oldKeys = this.keys - with.keys
+	val updated = with.filter { (k, v) -> this.keys.contains(k) && this[k] != v }
+
+	for (key in oldKeys) remove(key)
+	putAll(with.filterKeys { it in newKeys })
+	putAll(updated)
+}
+
+/**
  * Iterates over and calls provided `action` on each element.
  *
  * @author Jan Kubovy [jan@kubovy.eu]

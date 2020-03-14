@@ -3,6 +3,7 @@
 /build/
 /target/
 /out/
+.gitconfig
 *.bak
 *.iml
 *.log
